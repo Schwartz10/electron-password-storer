@@ -7,9 +7,17 @@ const BrowserWindow = electron.BrowserWindow
 const path = require('path')
 const url = require('url')
 
+// requiring registers the main process event listeners
+const eventListeners = require('./main_process_events');
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+
+// ipcMain.on('store-key', (event, service, password) => {
+//   service = service.map(name => name.toLowerCase()).filter(name => name !== '');
+//   event.sender.send('store-key-reply', true)
+// })
 
 function createWindow () {
   // Create the browser window.
@@ -17,7 +25,7 @@ function createWindow () {
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(__dirname, 'public', 'index.html'),
     protocol: 'file:',
     slashes: true
   }))
