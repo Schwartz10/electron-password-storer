@@ -21,7 +21,7 @@ class StoreKey extends Component {
     ipcRenderer.on('store-key-reply', (event, storedSuccessfully) => {
       storedSuccessfully ?
         createNotification("success",'Password stored successfully!', 'Success', 3000) :
-        createNotification("error");
+        createNotification("error", 'An unknown error occured', "Error", 3000);
     })
   }
 
