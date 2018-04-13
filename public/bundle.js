@@ -176,14 +176,25 @@ var StoreKey = function (_Component) {
     _this.state = initialState;
     _this.handleChange = _this.handleChange.bind(_this);
     _this.handleSubmit = _this.handleSubmit.bind(_this);
+    _this.getValidationState = _this.getValidationState.bind(_this);
     return _this;
   }
 
   _createClass(StoreKey, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
+      var _this2 = this;
+
       _electron.ipcRenderer.on('store-key-reply', function (event, storedSuccessfully) {
-        storedSuccessfully ? (0, _notification2.default)("success", 'Password stored successfully!', 'Success', 3000) : (0, _notification2.default)("error");
+        // if the key was stored successfully, popup a success notification and clear the form fields
+        if (storedSuccessfully) {
+          (0, _notification2.default)('success', 'Password stored successfully!', 'Success', 3000);
+          _this2.setState(initialState);
+        }
+        // if user didnt' enter in all credentials, throw a error notif
+        else {
+            (0, _notification2.default)("error", 'Make sure you entered valid credentials', "Error", 3000);
+          }
       });
     }
   }, {
@@ -194,24 +205,32 @@ var StoreKey = function (_Component) {
   }, {
     key: 'handleChange',
     value: function handleChange(event, type) {
+      // handles form change
       this.setState(_defineProperty({}, type, event.target.value));
     }
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
+      // handles form submission
       var _state = this.state,
           service = _state.service,
           username = _state.username,
           password = _state.password;
 
       event.preventDefault();
-      this.setState(initialState);
       _electron.ipcRenderer.send('store-key', service, username, password);
+    }
+  }, {
+    key: 'getValidationState',
+    value: function getValidationState(field) {
+      console.log(this.state[field].length);
+      if (this.state[field].length === 0) return 'error';
+      return null;
     }
   }, {
     key: 'render',
     value: function render() {
-      var _this2 = this;
+      var _this3 = this;
 
       var _state2 = this.state,
           service = _state2.service,
@@ -232,7 +251,7 @@ var StoreKey = function (_Component) {
           { inline: true, onSubmit: this.handleSubmit },
           _react2.default.createElement(
             _reactBootstrap.FormGroup,
-            { controlId: 'service' },
+            { validationState: this.getValidationState('service'), controlId: 'service' },
             _react2.default.createElement(
               _reactBootstrap.ControlLabel,
               null,
@@ -240,13 +259,13 @@ var StoreKey = function (_Component) {
             ),
             ' ',
             _react2.default.createElement(_reactBootstrap.FormControl, { onChange: function onChange(event) {
-                return _this2.handleChange(event, 'service');
+                return _this3.handleChange(event, 'service');
               }, type: 'text', placeholder: 'Gmail', value: service })
           ),
           ' ',
           _react2.default.createElement(
             _reactBootstrap.FormGroup,
-            { controlId: 'username' },
+            { validationState: this.getValidationState('username'), controlId: 'username' },
             _react2.default.createElement(
               _reactBootstrap.ControlLabel,
               null,
@@ -254,13 +273,13 @@ var StoreKey = function (_Component) {
             ),
             ' ',
             _react2.default.createElement(_reactBootstrap.FormControl, { onChange: function onChange(event) {
-                return _this2.handleChange(event, 'username');
+                return _this3.handleChange(event, 'username');
               }, type: 'text', placeholder: 'joesmith@gmail.com', value: username })
           ),
           ' ',
           _react2.default.createElement(
             _reactBootstrap.FormGroup,
-            { controlId: 'password' },
+            { validationState: this.getValidationState('password'), controlId: 'password' },
             _react2.default.createElement(
               _reactBootstrap.ControlLabel,
               null,
@@ -268,7 +287,7 @@ var StoreKey = function (_Component) {
             ),
             ' ',
             _react2.default.createElement(_reactBootstrap.FormControl, { onChange: function onChange(event) {
-                return _this2.handleChange(event, 'password');
+                return _this3.handleChange(event, 'password');
               }, type: 'password', placeholder: '...', value: password })
           ),
           ' ',

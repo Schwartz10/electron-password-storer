@@ -15,29 +15,43 @@ class StoreKey extends Component {
     this.state = initialState;
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.getValidationState = this.getValidationState.bind(this);
   }
 
   componentDidMount(){
     ipcRenderer.on('store-key-reply', (event, storedSuccessfully) => {
-      storedSuccessfully ?
-        createNotification("success",'Password stored successfully!', 'Success', 3000) :
-        createNotification("error", 'An unknown error occured', "Error", 3000);
-    })
+      // if the key was stored successfully, popup a success notification and clear the form fields
+      if (storedSuccessfully) {
+        createNotification('success', 'Password stored successfully!', 'Success', 3000);
+        this.setState(initialState);
+      }
+      // if user didnt' enter in all credentials, throw a error notif
+      else {
+        createNotification("error", 'Make sure you entered valid credentials', "Error", 3000);
+      }
+    });
   }
 
   componentWillUnmount(){
-    ipcRenderer.removeAllListeners('store-key-reply')
+    ipcRenderer.removeAllListeners('store-key-reply');
   }
 
   handleChange(event, type){
+    // handles form change
     this.setState({[type]: event.target.value});
   }
 
   handleSubmit(event){
+    // handles form submission
     const {service, username, password} = this.state;
     event.preventDefault();
-    this.setState(initialState);
     ipcRenderer.send('store-key', service, username, password);
+  }
+
+  getValidationState(field) {
+    console.log(this.state[field].length);
+    if (this.state[field].length === 0) return 'error';
+    return null;
   }
 
   render() {
@@ -48,17 +62,17 @@ class StoreKey extends Component {
         <h1>Store your password</h1>
         <Form inline onSubmit={this.handleSubmit}>
 
-          <FormGroup controlId="service">
+          <FormGroup validationState={this.getValidationState('service')}controlId="service">
             <ControlLabel>Service</ControlLabel>{' '}
             <FormControl onChange={(event) => this.handleChange(event, 'service')}type="text" placeholder="Gmail" value={service} />
           </FormGroup>{' '}
 
-          <FormGroup controlId="username">
+          <FormGroup validationState={this.getValidationState('username')}controlId="username">
             <ControlLabel>Username</ControlLabel>{' '}
             <FormControl onChange={(event) => this.handleChange(event, 'username')}type="text" placeholder="joesmith@gmail.com" value={username} />
           </FormGroup>{' '}
 
-          <FormGroup controlId="password">
+          <FormGroup validationState={this.getValidationState('password')}controlId="password">
             <ControlLabel>Password</ControlLabel>{' '}
             <FormControl onChange={(event) => this.handleChange(event, 'password')}type="password" placeholder="..." value={password} />
           </FormGroup>{' '}
