@@ -95,6 +95,10 @@ var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules
 
 var _electron = __webpack_require__(/*! electron */ "electron");
 
+var _notification = __webpack_require__(/*! ./notification */ "./app/components/notification.js");
+
+var _notification2 = _interopRequireDefault(_notification);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -109,34 +113,68 @@ var GetKey = function (_Component) {
   function GetKey() {
     _classCallCheck(this, GetKey);
 
-    return _possibleConstructorReturn(this, (GetKey.__proto__ || Object.getPrototypeOf(GetKey)).apply(this, arguments));
+    // if display modal has any credentials in it, we should display a modal with the credentials so the user can select which account he/she wants the pasword for
+    var _this = _possibleConstructorReturn(this, (GetKey.__proto__ || Object.getPrototypeOf(GetKey)).call(this));
+
+    _this.state = { displayModal: [], service: '' };
+    _this.handleResponse = _this.handleResponse.bind(_this);
+    _this.handleChange = _this.handleChange.bind(_this);
+    _this.handleSubmit = _this.handleSubmit.bind(_this);
+    return _this;
   }
 
   _createClass(GetKey, [{
     key: 'componentDidMount',
     value: function componentDidMount() {
-      _electron.ipcRenderer.on('get-key-reply', function (event) {});
+      var _this2 = this;
+
+      _electron.ipcRenderer.on('get-password-reply', function (event, credentials) {
+        // credentials will come back as an array of { account: 'foo', password: 'bar' } so we handle different cases depending on the length of the credentials array
+        _this2.handleResponse(credentials);
+      });
     }
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
-      _electron.ipcRenderer.removeAllListeners('get-key-reply');
+      _electron.ipcRenderer.removeAllListeners('get-password-reply');
+    }
+  }, {
+    key: 'handleResponse',
+    value: function handleResponse(credentials) {
+      if (credentials.length === 0) {
+        // if nothing comes back, give the user an error notif
+        (0, _notification2.default)("error", 'We couldn\'t find a password for the service', "Error", 3000);
+      } else if (credentials.length === 1) {
+        // if one credential comes back, copy the password to the clipboard
+        this.setState({ service: '' });
+        _electron.clipboard.write({ text: credentials[0].password });
+        (0, _notification2.default)('success', 'Password for ' + credentials[0].account + ' copied to clipboard!', 'Success', 5000);
+      } else {
+        // display the modal so that a user can choose which account to select credentials from
+        this.setState({ displayModal: credentials });
+      }
+    }
+  }, {
+    key: 'handleChange',
+    value: function handleChange(event) {
+      // handles form change
+      this.setState({ service: event.target.value });
     }
   }, {
     key: 'handleSubmit',
     value: function handleSubmit(event) {
       // handles form submission
-      var _state = this.state,
-          service = _state.service,
-          username = _state.username,
-          password = _state.password;
+      var service = this.state.service;
 
       event.preventDefault();
-      _electron.ipcRenderer.send('get-key', service, username, password);
+      _electron.ipcRenderer.send('get-password', service);
     }
   }, {
     key: 'render',
     value: function render() {
+      var service = this.state.service;
+
+      console.log(service);
       return _react2.default.createElement(
         'div',
         { className: 'get-key-container' },
@@ -157,7 +195,7 @@ var GetKey = function (_Component) {
               'Service'
             ),
             ' ',
-            _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', placeholder: 'Gmail' })
+            _react2.default.createElement(_reactBootstrap.FormControl, { onChange: this.handleChange, type: 'text', placeholder: 'Gmail', value: service })
           ),
           ' ',
           _react2.default.createElement(
