@@ -71,6 +71,153 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./app/components/GetKey.js":
+/*!**********************************!*\
+  !*** ./app/components/GetKey.js ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+
+var _electron = __webpack_require__(/*! electron */ "electron");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var GetKey = function (_Component) {
+  _inherits(GetKey, _Component);
+
+  function GetKey() {
+    _classCallCheck(this, GetKey);
+
+    return _possibleConstructorReturn(this, (GetKey.__proto__ || Object.getPrototypeOf(GetKey)).apply(this, arguments));
+  }
+
+  _createClass(GetKey, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      _electron.ipcRenderer.on('get-key-reply', function (event) {});
+    }
+  }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      _electron.ipcRenderer.removeAllListeners('get-key-reply');
+    }
+  }, {
+    key: 'handleSubmit',
+    value: function handleSubmit(event) {
+      // handles form submission
+      var _state = this.state,
+          service = _state.service,
+          username = _state.username,
+          password = _state.password;
+
+      event.preventDefault();
+      _electron.ipcRenderer.send('get-key', service, username, password);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        { className: 'get-key-container' },
+        _react2.default.createElement(
+          'h1',
+          null,
+          'Get a password'
+        ),
+        _react2.default.createElement(
+          _reactBootstrap.Form,
+          { inline: true, onSubmit: this.handleSubmit },
+          _react2.default.createElement(
+            _reactBootstrap.FormGroup,
+            { controlId: 'service' },
+            _react2.default.createElement(
+              _reactBootstrap.ControlLabel,
+              null,
+              'Service'
+            ),
+            ' ',
+            _react2.default.createElement(_reactBootstrap.FormControl, { type: 'text', placeholder: 'Gmail' })
+          ),
+          ' ',
+          _react2.default.createElement(
+            _reactBootstrap.Button,
+            { type: 'submit' },
+            'Get Password'
+          )
+        )
+      );
+    }
+  }]);
+
+  return GetKey;
+}(_react.Component);
+
+exports.default = GetKey;
+
+/***/ }),
+
+/***/ "./app/components/Main.js":
+/*!********************************!*\
+  !*** ./app/components/Main.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _GetKey = __webpack_require__(/*! ./GetKey */ "./app/components/GetKey.js");
+
+var _GetKey2 = _interopRequireDefault(_GetKey);
+
+var _StoreKey = __webpack_require__(/*! ./StoreKey */ "./app/components/StoreKey.js");
+
+var _StoreKey2 = _interopRequireDefault(_StoreKey);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Main = function Main() {
+  return _react2.default.createElement(
+    'div',
+    null,
+    _react2.default.createElement(_StoreKey2.default, null),
+    _react2.default.createElement(_GetKey2.default, null)
+  );
+};
+
+exports.default = Main;
+
+/***/ }),
+
 /***/ "./app/components/Root.js":
 /*!********************************!*\
   !*** ./app/components/Root.js ***!
@@ -91,9 +238,9 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRouterDom = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/es/index.js");
 
-var _StoreKey = __webpack_require__(/*! ./StoreKey */ "./app/components/StoreKey.js");
+var _Main = __webpack_require__(/*! ./Main */ "./app/components/Main.js");
 
-var _StoreKey2 = _interopRequireDefault(_StoreKey);
+var _Main2 = _interopRequireDefault(_Main);
 
 var _reactNotifications = __webpack_require__(/*! react-notifications */ "./node_modules/react-notifications/lib/index.js");
 
@@ -110,8 +257,8 @@ var Root = function Root() {
       _react2.default.createElement(
         _reactRouterDom.Switch,
         null,
-        _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/store-key', component: _StoreKey2.default }),
-        _react2.default.createElement(_reactRouterDom.Route, { component: _StoreKey2.default })
+        _react2.default.createElement(_reactRouterDom.Route, { exact: true, path: '/store-key', component: _Main2.default }),
+        _react2.default.createElement(_reactRouterDom.Route, { component: _Main2.default })
       )
     )
   );
@@ -162,7 +309,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var initialState = {
   service: '',
   username: '',
-  password: ''
+  password: '',
+  attemptedSubmit: false
 };
 
 var StoreKey = function (_Component) {
@@ -205,8 +353,10 @@ var StoreKey = function (_Component) {
   }, {
     key: 'handleChange',
     value: function handleChange(event, type) {
+      var _setState;
+
       // handles form change
-      this.setState(_defineProperty({}, type, event.target.value));
+      this.setState((_setState = {}, _defineProperty(_setState, type, event.target.value), _defineProperty(_setState, 'attemptedSubmit', false), _setState));
     }
   }, {
     key: 'handleSubmit',
@@ -218,13 +368,13 @@ var StoreKey = function (_Component) {
           password = _state.password;
 
       event.preventDefault();
+      this.setState({ attemptedSubmit: true });
       _electron.ipcRenderer.send('store-key', service, username, password);
     }
   }, {
     key: 'getValidationState',
     value: function getValidationState(field) {
-      console.log(this.state[field].length);
-      if (this.state[field].length === 0) return 'error';
+      if (this.state[field].length === 0 && this.state.attemptedSubmit) return 'error';
       return null;
     }
   }, {

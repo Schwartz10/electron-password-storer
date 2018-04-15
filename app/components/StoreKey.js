@@ -6,7 +6,8 @@ import createNotification from './notification';
 const initialState = {
   service: '',
   username: '',
-  password: ''
+  password: '',
+  attemptedSubmit: false
 };
 
 class StoreKey extends Component {
@@ -38,19 +39,20 @@ class StoreKey extends Component {
 
   handleChange(event, type){
     // handles form change
-    this.setState({[type]: event.target.value});
+    this.setState({[type]: event.target.value,
+      attemptedSubmit: false});
   }
 
   handleSubmit(event){
     // handles form submission
     const {service, username, password} = this.state;
     event.preventDefault();
+    this.setState({attemptedSubmit: true});
     ipcRenderer.send('store-key', service, username, password);
   }
 
   getValidationState(field) {
-    console.log(this.state[field].length);
-    if (this.state[field].length === 0) return 'error';
+    if (this.state[field].length === 0 && this.state.attemptedSubmit) return 'error';
     return null;
   }
 
@@ -62,7 +64,7 @@ class StoreKey extends Component {
         <h1>Store your password</h1>
         <Form inline onSubmit={this.handleSubmit}>
 
-          <FormGroup validationState={this.getValidationState('service')}controlId="service">
+          <FormGroup validationState={this.getValidationState('service')} controlId="service">
             <ControlLabel>Service</ControlLabel>{' '}
             <FormControl onChange={(event) => this.handleChange(event, 'service')}type="text" placeholder="Gmail" value={service} />
           </FormGroup>{' '}
