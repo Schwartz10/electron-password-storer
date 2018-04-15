@@ -6,6 +6,7 @@ ipcMain.on('store-key', (event, service, username, password) => {
   if (!service || !username || !password) {
     event.sender.send('store-key-reply', false);
   } else {
+    service = service.trim().toLowerCase();
     setPassword(service, username, password);
     event.sender.send('store-key-reply', true);
   }
