@@ -2,15 +2,17 @@ import React, {Component} from 'react';
 import { Form, FormGroup, ControlLabel, FormControl, Button } from 'react-bootstrap';
 import {ipcRenderer, clipboard} from 'electron';
 import createNotification from './notification';
+import CredentialsModal from './CredentialsModal';
 
 class GetKey extends Component {
   constructor(){
     super();
     // if display modal has any credentials in it, we should display a modal with the credentials so the user can select which account he/she wants the pasword for
-    this.state = {displayModal: [], service: ''};
+    this.state = {displayModalWithCreds: [], service: ''};
     this.handleResponse = this.handleResponse.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
   componentDidMount(){
@@ -31,13 +33,13 @@ class GetKey extends Component {
     }
     else if (credentials.length === 1) {
       // if one credential comes back, copy the password to the clipboard
-      this.setState({service: ''})
+      this.setState({service: ''});
       clipboard.write({text: credentials[0].password});
       createNotification('success', `Password for ${credentials[0].account} copied to clipboard!`, 'Success', 5000);
     }
     else {
       // display the modal so that a user can choose which account to select credentials from
-      this.setState({displayModal: credentials});
+      this.setState({displayModalWithCreds: credentials});
     }
   }
 
@@ -53,8 +55,17 @@ class GetKey extends Component {
     ipcRenderer.send('get-password', service);
   }
 
+  handleClick(event, account, password){
+    event.preventDefault();
+    // gets the password of the appropriate account and copies it to the users clipboard
+    clipboard.write({text: password});
+    createNotification('success', `Password for ${account} copied to clipboard!`, 'Success', 5000);
+    // sets the credentials back to initial state
+    this.setState({displayModalWithCreds: [], service: ''});
+  }
+
   render() {
-    const { service } = this.state;
+    const { service, displayModalWithCreds } = this.state;
     return (
       <div className="get-key-container">
         <h1>Get a password</h1>
@@ -62,10 +73,11 @@ class GetKey extends Component {
 
           <FormGroup controlId="service">
             <ControlLabel>Service</ControlLabel>{' '}
-            <FormControl onChange={this.handleChange} type="text" placeholder="Gmail" value={service}/>
+            <FormControl onChange={this.handleChange} type="text" placeholder="Gmail" value={service} />
           </FormGroup>{' '}
 
           <Button type="submit">Get Password</Button>
+          <CredentialsModal displayModalWithCreds={displayModalWithCreds} handleClick={this.handleClick} />
         </Form>
       </div>
     );

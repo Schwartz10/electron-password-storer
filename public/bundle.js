@@ -71,6 +71,104 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./app/components/CredentialsModal.js":
+/*!********************************************!*\
+  !*** ./app/components/CredentialsModal.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ "./node_modules/react-bootstrap/es/index.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Credentials = function Credentials(props) {
+  var credentials = props.credentials,
+      handleClick = props.handleClick;
+
+  return _react2.default.createElement(
+    'div',
+    null,
+    _react2.default.createElement(
+      _reactBootstrap.ListGroup,
+      null,
+      credentials.map(function (credential, idx) {
+        var account = credential.account,
+            password = credential.password;
+
+        return _react2.default.createElement(
+          _reactBootstrap.ListGroupItem,
+          {
+            key: idx,
+            onClick: function onClick(event) {
+              return handleClick(event, password);
+            },
+            href: account },
+          account
+        );
+      })
+    )
+  );
+};
+
+var CredentialsModal = function CredentialsModal(props) {
+  var shouldDisplay = props.displayModalWithCreds.length > 0;
+  var credentials = props.displayModalWithCreds;
+  var handleClick = props.handleClick;
+
+  return _react2.default.createElement(
+    'div',
+    { className: 'static-modal' },
+    _react2.default.createElement(
+      _reactBootstrap.Modal,
+      { show: shouldDisplay },
+      _react2.default.createElement(
+        _reactBootstrap.Modal.Header,
+        null,
+        _react2.default.createElement(
+          _reactBootstrap.Modal.Title,
+          null,
+          'Which Account?'
+        )
+      ),
+      _react2.default.createElement(
+        _reactBootstrap.Modal.Body,
+        null,
+        _react2.default.createElement(
+          'h5',
+          null,
+          'We found multiple accounts associated with that service'
+        ),
+        _react2.default.createElement(Credentials, { credentials: credentials, handleClick: handleClick })
+      ),
+      _react2.default.createElement(
+        _reactBootstrap.Modal.Footer,
+        null,
+        _react2.default.createElement(
+          'h5',
+          null,
+          'test'
+        )
+      )
+    )
+  );
+};
+
+exports.default = CredentialsModal;
+
+/***/ }),
+
 /***/ "./app/components/GetKey.js":
 /*!**********************************!*\
   !*** ./app/components/GetKey.js ***!
@@ -99,6 +197,10 @@ var _notification = __webpack_require__(/*! ./notification */ "./app/components/
 
 var _notification2 = _interopRequireDefault(_notification);
 
+var _CredentialsModal = __webpack_require__(/*! ./CredentialsModal */ "./app/components/CredentialsModal.js");
+
+var _CredentialsModal2 = _interopRequireDefault(_CredentialsModal);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -116,10 +218,11 @@ var GetKey = function (_Component) {
     // if display modal has any credentials in it, we should display a modal with the credentials so the user can select which account he/she wants the pasword for
     var _this = _possibleConstructorReturn(this, (GetKey.__proto__ || Object.getPrototypeOf(GetKey)).call(this));
 
-    _this.state = { displayModal: [], service: '' };
+    _this.state = { displayModalWithCreds: [], service: '' };
     _this.handleResponse = _this.handleResponse.bind(_this);
     _this.handleChange = _this.handleChange.bind(_this);
     _this.handleSubmit = _this.handleSubmit.bind(_this);
+    _this.handleClick = _this.handleClick.bind(_this);
     return _this;
   }
 
@@ -151,7 +254,7 @@ var GetKey = function (_Component) {
         (0, _notification2.default)('success', 'Password for ' + credentials[0].account + ' copied to clipboard!', 'Success', 5000);
       } else {
         // display the modal so that a user can choose which account to select credentials from
-        this.setState({ displayModal: credentials });
+        this.setState({ displayModalWithCreds: credentials });
       }
     }
   }, {
@@ -170,11 +273,22 @@ var GetKey = function (_Component) {
       _electron.ipcRenderer.send('get-password', service);
     }
   }, {
+    key: 'handleClick',
+    value: function handleClick(event, account, password) {
+      event.preventDefault();
+      // gets the password of the appropriate account and copies it to the users clipboard
+      _electron.clipboard.write({ text: password });
+      (0, _notification2.default)('success', 'Password for ' + account + ' copied to clipboard!', 'Success', 5000);
+      // sets the credentials back to initial state
+      this.setState({ displayModalWithCreds: [], service: '' });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      var service = this.state.service;
+      var _state = this.state,
+          service = _state.service,
+          displayModalWithCreds = _state.displayModalWithCreds;
 
-      console.log(service);
       return _react2.default.createElement(
         'div',
         { className: 'get-key-container' },
@@ -202,7 +316,8 @@ var GetKey = function (_Component) {
             _reactBootstrap.Button,
             { type: 'submit' },
             'Get Password'
-          )
+          ),
+          _react2.default.createElement(_CredentialsModal2.default, { displayModalWithCreds: displayModalWithCreds, handleClick: this.handleClick })
         )
       );
     }
