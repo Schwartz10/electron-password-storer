@@ -11,7 +11,7 @@ const Credentials = props => {
           return (
             <ListGroupItem
               key={idx}
-              onClick={(event) => handleClick(event, password)}
+              onClick={(event) => handleClick(event, account, password)}
               href={account}>{account}
             </ListGroupItem>
           );
